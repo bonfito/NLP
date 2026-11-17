@@ -1,0 +1,141 @@
+# Set di valutazione. Ogni domanda: risposta attesa breve + fonte/macroargomento corretti.
+# expected_files: basta UNO di questi nelle fonti restituite perché la fonte sia "corretta".
+# route: theory | quiz | offtopic (default theory)
+#
+# STATO: 24 domande scritte su testo letto in Embeddings, DNNs, PromptingLLMs, SOTA4LLMs2026, Agents,
+# NLPApplications, LangGraph_Concepts, UnderstandingTokenization, ChurchETAL2024_RAG.
+# DA AGGIUNGERE (Part I: n-grammi, probabilità, valutazione, corpora; Part II: ASR, parsing, WordNet/WSD, FrameNet)
+# fino a 30-40 domande: leggete la slide, scrivete la domanda e controllate la risposta sul materiale.
+
+- id: emb-01
+  question: "Che cos'è la Distributional Hypothesis?"
+  expected_answer: "Il grado di similarità semantica tra due espressioni è funzione della similarità dei contesti linguistici in cui compaiono."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf, Lenci_2008.pdf]
+- id: emb-02
+  question: "Che differenza c'è tra relazioni sintagmatiche e paradigmatiche, e quale modello distribuzionale le cattura?"
+  expected_answer: "Le sintagmatiche legano parole che co-occorrono nel testo (matrice parole×documenti); le paradigmatiche parole sostituibili in uno stesso contesto (vicini condivisi, matrice parole×parole)."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf, Lenci_2008.pdf]
+- id: emb-03
+  question: "Come fa LSA a ridurre la dimensionalità dello spazio parole-contesti?"
+  expected_answer: "Con la Singular Value Decomposition: si tengono solo i k valori singolari più grandi e i relativi vettori."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf]
+- id: emb-04
+  question: "Quali sono i due modelli di word2vec?"
+  expected_answer: "CBOW e Skip-Gram (Mikolov et al. 2013)."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf, MikolovETAL2013_Word2Vec.pdf]
+- id: emb-05
+  question: "Qual è il limite principale degli embeddings statici come word2vec con le parole polisemiche?"
+  expected_answer: "Un solo vettore per parola fonde tutti i significati (es. 'bank'), quindi non distingue i sensi; da qui gli embeddings contestuali."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf]
+- id: emb-06
+  question: "Come viene addestrato BERT?"
+  expected_answer: "Con Masked Language Model (15% dei token mascherati) e Next Sentence Prediction."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf]
+- id: emb-07
+  question: "Cosa pensa il docente dell'importanza degli embeddings per l'NLP?"
+  expected_answer: "Per il docente il passaggio alle rappresentazioni vettoriali è la rivoluzione più importante dell'NLP negli ultimi dieci anni (è una sua tesi)."
+  expected_macro: Embeddings
+  expected_files: [Embeddings.pdf]
+  expect_opinion_flag: true
+- id: dl-01
+  question: "Qual è il problema del collo di bottiglia nelle architetture encoder-decoder con RNN?"
+  expected_answer: "Tutta la frase in input è compressa in un unico vettore; inoltre l'addestramento non è parallelizzabile e le dipendenze a lungo termine sono difficili."
+  expected_macro: Deep learning
+  expected_files: [DNNs.pdf]
+- id: dl-02
+  question: "Perché i Transformer hanno sostituito le RNN e perché serve il positional encoding?"
+  expected_answer: "Le RNN sono lente da addestrare e hanno problemi di gradiente su sequenze lunghe; i Transformer sono parallelizzabili ma non conoscono l'ordine delle parole, quindi serve il positional encoding."
+  expected_macro: Deep learning
+  expected_files: [DNNs.pdf]
+- id: dl-03
+  question: "Cosa significa che in GPT la self-attention è 'masked'?"
+  expected_answer: "Ogni token non può guardare i token a destra (futuri), per poter generare in modo auto-regressivo."
+  expected_macro: Deep learning
+  expected_files: [DNNs.pdf]
+- id: dl-04
+  question: "Che ruolo hanno Query, Key e Value nella self-attention?"
+  expected_answer: "Sono proiezioni degli embeddings di input; la similarità Query-Key pesa i Value (analogia con la ricerca in un database); nella self-attention provengono tutti dalle stesse parole."
+  expected_macro: Deep learning
+  expected_files: [DNNs.pdf]
+- id: pr-01
+  question: "Qual è la differenza tra greedy search e beam search nella generazione di testo?"
+  expected_answer: "Greedy sceglie sempre la parola più probabile; beam search mantiene le num_beams ipotesi più probabili a ogni passo e sceglie quella con probabilità complessiva maggiore."
+  expected_macro: Prompting
+  expected_files: [PromptingLLMs.pdf]
+- id: pr-02
+  question: "Come funziona il top-p (nucleus) sampling?"
+  expected_answer: "Si campiona dal più piccolo insieme di parole la cui probabilità cumulata supera p (es. 0,92)."
+  expected_macro: Prompting
+  expected_files: [PromptingLLMs.pdf]
+- id: pr-03
+  question: "Quali sono le buone pratiche per scrivere un prompt efficace?"
+  expected_answer: "Essere specifici e chiari, strutturare il prompt, dare contesto, chiedere esempi, evitare ambiguità, adattarsi alle capacità del modello."
+  expected_macro: Prompting
+  expected_files: [PromptingLLMs.pdf]
+- id: ft-01
+  question: "Quali sono i due modi di usare un Transformer per un compito a valle?"
+  expected_answer: "Addestrare solo il classificatore usando il Transformer come generatore di feature, oppure fare fine-tuning dell'intero modello."
+  expected_macro: Compiti a valle e fine-tuning
+  expected_files: [NLPApplications.pdf, Embeddings.pdf]
+- id: ft-02
+  question: "Che cos'è il formato BIO nella named entity recognition?"
+  expected_answer: "B = inizio di un'entità, I = dentro l'entità, O = fuori da ogni entità."
+  expected_macro: Compiti a valle e fine-tuning
+  expected_files: [NLPApplications.pdf]
+- id: ft-03
+  question: "Quali ingredienti servono per una sentiment analysis rule-based?"
+  expected_answer: "Lessici annotati di parole, negatori e intensificatori con polarità, e regole di propagazione della polarità a livello di frase."
+  expected_macro: Compiti a valle e fine-tuning
+  expected_files: [NLPApplications.pdf]
+- id: sota-01
+  question: "In cosa differiscono RLHF e RLVR?"
+  expected_answer: "RLHF usa un reward model addestrato su feedback umano (con PPO) e ottimizza l'approvazione; RLVR usa ricompense verificabili (es. risposta corretta, compilatore) come segnale binario."
+  expected_macro: Stato dell'arte LLM
+  expected_files: [SOTA4LLMs2026.pdf]
+  expect_opinion_flag: true
+- id: sota-02
+  question: "Come funziona GRPO?"
+  expected_answer: "Il modello genera un gruppo di tentativi per lo stesso problema, li confronta tra loro con punteggi relativi e rinforza quelli che hanno successo."
+  expected_macro: Stato dell'arte LLM
+  expected_files: [SOTA4LLMs2026.pdf]
+  expect_opinion_flag: true
+- id: ag-01
+  question: "Quali sono i componenti principali di un agente LLM?"
+  expected_answer: "Reasoning core (LLM), memory subsystem, tools, planning and reflection module, orchestration/control loop (perceive-plan-act-observe-re-plan)."
+  expected_macro: Agenti
+  expected_files: [Agents.pdf]
+- id: ag-02
+  question: "In LangGraph, a cosa serve Annotated[list, add] nello State?"
+  expected_answer: "Indica a LangGraph di unire (concatenare) le liste quando più nodi aggiornano lo stesso campo, invece di sovrascriverlo."
+  expected_macro: Agenti
+  expected_files: [LangGraph_Concepts.html]
+- id: tok-01
+  question: "Come funziona l'algoritmo BPE di tokenizzazione?"
+  expected_answer: "Parte dai singoli caratteri e fonde iterativamente le coppie più frequenti in nuovi token fino a raggiungere la dimensione del vocabolario."
+  expected_macro: Tokenizzazione
+  expected_files: [UnderstandingTokenization.html, Tokenization.html, TokenisationSentenceSplitting.pdf]
+- id: rag-01
+  question: "Che cos'è il RAG e quale problema aiuta a ridurre?"
+  expected_answer: "Retrieval-augmented generation: caricare file just-in-time per dare al chatbot informazioni che non ha (dati privati o recenti), riducendo le hallucination."
+  expected_macro: RAG
+  expected_files: [ChurchETAL2024_RAG.pdf]
+
+# ---- fuori tema: l'agente deve rifiutare senza fare retrieval ----
+- id: off-01
+  question: "Che tempo farà domani a Bologna?"
+  route: offtopic
+  expected_answer: "Rifiuto: fuori tema."
+- id: off-02
+  question: "Dammi una ricetta per la carbonara."
+  route: offtopic
+  expected_answer: "Rifiuto: fuori tema."
+- id: off-03
+  question: "Chi ha vinto lo scudetto l'anno scorso?"
+  route: offtopic
+  expected_answer: "Rifiuto: fuori tema."

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.pytest_cache/
+*.egg-info/
+# materiali del corso (copyright del prof e di terzi) e indice generato: non vanno su GitHub
+data/raw/*
+!data/raw/.gitkeep
+data/index/
+data/ocr_cache/
+eval/results/

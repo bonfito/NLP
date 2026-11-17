@@ -1,0 +1,73 @@
+# Mappa dei materiali: file -> parte, macroargomento, tipo.
+# Serve per citare la fonte nelle risposte e per valutare se il macroargomento indicato è giusto.
+# kind: slide | article | tutorial | book
+# stance: professor_opinion = contiene tesi del docente (da presentare come sue, non come dati neutri)
+# verified: false = classificazione dedotta dal titolo del file, da controllare sulla scaletta del sito
+# I nomi file sono confrontati ignorando maiuscole, accenti, suffissi " (1)" e artefatti dello zip (#U00e8).
+
+exclude:
+  - SLP_ed3book_aug25.pdf        # scelta del team: il libro SLP non si usa
+
+files:
+  # ---------- Part I: Foundations ----------
+  ComputationalLinguisticsIntroE.pdf: {part: "Part I", macro: "Introduzione", kind: slide}
+  ProbabilityE.pdf:                   {part: "Part I", macro: "Probabilità", kind: slide}
+  LinguistGuide2Stats.pdf:            {part: "Part I", macro: "Probabilità", kind: book, verified: false}
+  ngramsE.pdf:                        {part: "Part I", macro: "N-grammi", kind: slide}
+  DNNs.pdf:                           {part: "Part I", macro: "Deep learning", kind: slide}
+  EvaluationNLP.pdf:                  {part: "Part I", macro: "Valutazione", kind: slide}
+  CorporaE.pdf:                       {part: "Part I", macro: "Corpora", kind: slide}
+  Embeddings.pdf:                     {part: "Part I", macro: "Embeddings", kind: slide}
+  Lenci_2008.pdf:                     {part: "Part I", macro: "Embeddings", kind: article}
+  MikolovETAL2013_Word2Vec.pdf:       {part: "Part I", macro: "Embeddings", kind: article}
+  LeMikolov2014_PV.pdf:               {part: "Part I", macro: "Embeddings", kind: article}
+
+  # ---------- Part II: NLP ----------
+  SpeechSampling.pdf:                 {part: "Part II", macro: "Parlato e ASR", kind: slide}
+  SpeechRecognition.pdf:              {part: "Part II", macro: "Parlato e ASR", kind: slide}
+  ICT_LinguaParlataE.pdf:             {part: "Part II", macro: "Parlato e ASR", kind: slide}
+  ASRwithDNNs.html:                   {part: "Part II", macro: "Parlato e ASR", kind: tutorial}
+  Cap2_RabinerJuang.pdf:              {part: "Part II", macro: "Parlato e ASR", kind: book}
+  KheddarETAL2024.pdf:                {part: "Part II", macro: "Parlato e ASR", kind: article, verified: false}
+  SpokenDialogueSystems.pdf:          {part: "Part II", macro: "Dialogo", kind: slide}
+  TokenisationSentenceSplitting.pdf:  {part: "Part II", macro: "Tokenizzazione", kind: slide}
+  Tokenization.html:                  {part: "Part II", macro: "Tokenizzazione", kind: tutorial}
+  UnderstandingTokenization.html:     {part: "Part II", macro: "Tokenizzazione", kind: tutorial}
+  schmid-Tokenising_CorpusLinguistics-IntHbk.pdf: {part: "Part II", macro: "Tokenizzazione", kind: article}
+  Morphology_and_PoStagging.pdf:      {part: "Part II", macro: "Morfologia e PoS tagging", kind: slide}
+  FSTTutorial.pdf:                    {part: "Part II", macro: "Morfologia e PoS tagging", kind: tutorial}
+  CarlbergerKrann.pdf:                {part: "Part II", macro: "Morfologia e PoS tagging", kind: article}
+  Tamburini2016.pdf:                  {part: "Part II", macro: "Morfologia e PoS tagging", kind: article}
+  Branco2018.pdf:                     {part: "Part II", macro: "Morfologia e PoS tagging", kind: article}
+  EVALITA2007_PRES_POSTag_Task.pdf:   {part: "Part II", macro: "Morfologia e PoS tagging", kind: slide}
+  GrammarsAndParsing.pdf:             {part: "Part II", macro: "Grammatiche e parsing", kind: slide}
+  TBDP.pdf:                           {part: "Part II", macro: "Grammatiche e parsing", kind: slide}
+  Traxler2010_Parsing.pdf:            {part: "Part II", macro: "Grammatiche e parsing", kind: article}
+  VacareanuETAL2020_PaT.pdf:          {part: "Part II", macro: "Grammatiche e parsing", kind: article}
+  fmnl07-ltag.pdf:                    {part: "Part II", macro: "Grammatiche e parsing", kind: article}
+  LexicalSemantics_WSD.pdf:           {part: "Part II", macro: "Semantica lessicale", kind: slide}
+  FrameSemantics.pdf:                 {part: "Part II", macro: "Semantica lessicale", kind: slide}
+  WordNets5papers.pdf:                {part: "Part II", macro: "Semantica lessicale", kind: article}
+  MillerFellbaumLRE2007.pdf:          {part: "Part II", macro: "Semantica lessicale", kind: article}
+
+  # ---------- Part III: Applicazioni e LLM ----------
+  NLPApplications.pdf:                {part: "Part III", macro: "Compiti a valle e fine-tuning", kind: slide}
+  PromptingLLMs.pdf:                  {part: "Part III", macro: "Prompting", kind: slide}
+  SOTA4LLMs2026.pdf:                  {part: "Part III", macro: "Stato dell'arte LLM", kind: slide, stance: professor_opinion}
+  LM_and_Prompting.pdf:               {part: "Part III", macro: "Stato dell'arte LLM", kind: slide, stance: professor_opinion, verified: false}
+  LLMEnergyConsumption.pdf:           {part: "Part III", macro: "Stato dell'arte LLM", kind: slide, stance: professor_opinion}
+  Agents.pdf:                         {part: "Part III", macro: "Agenti", kind: slide}
+  LangGraph_Concepts.html:            {part: "Part III", macro: "Agenti", kind: tutorial}
+
+  # ---------- Extra ----------
+  ChurchETAL2024_RAG.pdf:             {part: "Extra", macro: "RAG", kind: article}
+  Church2024.pdf:                     {part: "Extra", macro: "Stato dell'arte LLM", kind: article, verified: false}
+  Dale2024.pdf:                       {part: "Extra", macro: "Stato dell'arte LLM", kind: article, verified: false}
+  LDATopic.pdf:                       {part: "Extra", macro: "Topic modelling", kind: slide}
+  NetEmbedding.pdf:                   {part: "Extra", macro: "Network embedding", kind: slide}
+  Aslin-2017_StatisticalLearning.pdf: {part: "Extra", macro: "DNN e cognizione", kind: article, verified: false}
+  BayesianModelsCognition.pdf:        {part: "Extra", macro: "DNN e cognizione", kind: article, verified: false}
+  GoldsteinETAL2022.pdf:              {part: "Extra", macro: "DNN e cognizione", kind: article}
+  ManningETAL2020.pdf:                {part: "Extra", macro: "DNN e cognizione", kind: article}
+  YangPiantadosi2022.pdf:             {part: "Extra", macro: "DNN e cognizione", kind: article}
+  Milliere2024.pdf:                   {part: "Extra", macro: "DNN e cognizione", kind: article}

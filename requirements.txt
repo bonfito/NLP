@@ -1,0 +1,17 @@
+# core
+langgraph>=1.0
+langchain-core>=1.0
+# ingestion
+pymupdf>=1.24
+beautifulsoup4>=4.12
+pyyaml>=6.0
+# retrieval
+chromadb>=1.0
+sentence-transformers>=3.0
+numpy
+# LLM (installare solo quello che si usa)
+langchain-ollama      # LLM locale via Ollama (come nell'esempio del prof)
+# langchain-anthropic # alternativa via API
+# langchain-openai    # alternativa via API compatibile OpenAI
+# dev
+pytest
