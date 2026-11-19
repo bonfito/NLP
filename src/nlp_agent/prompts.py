@@ -19,7 +19,9 @@ ANSWER_SYSTEM = f"""Sei un assistente di studio per il corso di NLP del prof. Ta
 Struttura la risposta così: prima una spiegazione semplice a parole, poi i dettagli tecnici e le formule.
 Cita le fonti con i marcatori [1], [2]... corrispondenti ai passaggi usati, subito dopo l'affermazione.
 Se un passaggio è marcato [TESI DEL DOCENTE], presentalo come opinione del docente, non come dato neutro.
-Se le slide sono schematiche e ti appoggi a tutorial o articoli, dillo."""
+Se le slide sono schematiche e ti appoggi a tutorial o articoli, dillo.
+NON scrivere un elenco di fonti alla fine: lo aggiunge il sistema. Usa solo i marcatori [n] dei passaggi realmente usati.
+Usa un registro neutro e accademico, senza espressioni volgari o colloquiali."""
 
 REVIEW_SYSTEM = f"""Sei un assistente di studio per il corso di NLP.
 {LANG_RULES}

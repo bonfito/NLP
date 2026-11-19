@@ -98,3 +98,17 @@ def test_router_falls_back_to_question_without_query_en(store, settings):
             return super().complete(system, user)
     out = run(NoQuery(), store, settings, "Cos'è la self-attention?")
     assert out["query"] == "Cos'è la self-attention?"
+
+
+def test_model_written_sources_are_stripped_and_replaced(store, settings):
+    llm = FakeLLM(answer="La self-attention usa Q, K, V [1].\n\nFonti:\n- [5] Inventato.pdf (slide 99)")
+    out = run(llm, store, settings)
+    assert "Inventato.pdf" not in out["answer"]
+    assert out["answer"].count("Fonti:") == 1
+
+
+def test_diversify_caps_chunks_per_file():
+    from nlp_agent.graph import diversify
+    ps = [{"file": "Long.pdf", "id": i} for i in range(5)] + [{"file": "Slide.pdf", "id": 9}]
+    out = diversify(ps, k=4, per_file=2)
+    assert [p["file"] for p in out] == ["Long.pdf", "Long.pdf", "Slide.pdf"]

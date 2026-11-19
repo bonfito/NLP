@@ -1,6 +1,8 @@
 """Grafo LangGraph: router -> retrieve -> (answer | review | quiz) -> judge -> (fine | rewrite -> retrieve)."""
 from __future__ import annotations
 
+import re
+
 from langgraph.graph import END, START, StateGraph
 
 from . import prompts
@@ -14,6 +16,28 @@ OFFTOPIC_MSG = ("Posso aiutarti solo su argomenti del corso di NLP (embeddings, 
                 "parsing, ecc.). Prova a riformulare la domanda in relazione al corso.")
 NO_PASSAGES_MSG = "Non ho trovato nei materiali del corso passaggi pertinenti a questa richiesta."
 VALID_ROUTES = {"theory", "quiz", "review", "offtopic"}
+MAX_PER_FILE = 2          # al massimo 2 chunk per file tra i passaggi: evita che un solo documento lungo affolli i risultati
+CANDIDATES_FACTOR = 4     # si recuperano k*4 candidati e poi si applica il limite per file
+
+_MODEL_SOURCES = re.compile(r"\n+\s*(?:#+\s*)?\**\s*(?:Fonti|Fonte|Sources?)\s*\**\s*:.*\Z", re.IGNORECASE | re.DOTALL)
+
+
+def strip_model_sources(text: str) -> str:
+    """Toglie l'elenco 'Fonti:' eventualmente scritto dal modello: le fonti le costruisce il codice dai metadati."""
+    return _MODEL_SOURCES.sub("", text).rstrip()
+
+
+def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE) -> list[dict]:
+    """Prende i migliori k passaggi con al massimo `per_file` chunk dallo stesso file (ordine di similarità conservato)."""
+    out, count = [], {}
+    for p in passages:
+        if count.get(p["file"], 0) < per_file:
+            out.append(p)
+            count[p["file"]] = count.get(p["file"], 0) + 1
+        if len(out) == k:
+            break
+    return out
+
 
 
 def _heuristic_route(q: str) -> str:
@@ -46,9 +70,10 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
 
     def retrieve(state: AgentState) -> dict:
         k = settings.top_k * (2 if state["route"] in ("quiz", "review") else 1)
-        return {"passages": store.query(state["query"], k=k)}
+        return {"passages": diversify(store.query(state["query"], k=k * CANDIDATES_FACTOR), k)}
 
     def _finish(state: AgentState, text: str) -> dict:
+        text = strip_model_sources(text)
         block, entries = sources_block(text, state["passages"])
         full = f"{text}\n\nFonti:\n{block}"
         return {"answer": full, "sources": entries, "messages": [{"role": "assistant", "content": full}]}
