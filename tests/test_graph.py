@@ -112,3 +112,18 @@ def test_diversify_caps_chunks_per_file():
     ps = [{"file": "Long.pdf", "id": i} for i in range(5)] + [{"file": "Slide.pdf", "id": 9}]
     out = diversify(ps, k=4, per_file=2)
     assert [p["file"] for p in out] == ["Long.pdf", "Long.pdf", "Slide.pdf"]
+
+
+def test_markdown_heading_sources_without_colon_are_stripped():
+    from nlp_agent.graph import strip_model_sources
+    t = "Spiegazione [1].\n\n### Fonti\n- [1] A.pdf\n- [DNNs.pdf (slide)]"
+    assert strip_model_sources(t) == "Spiegazione [1]."
+    assert strip_model_sources("Testo.\n\n**Fonti:** [1] A.pdf") == "Testo."
+    assert strip_model_sources("Le Fonti dei dati sono varie.\nAltro.") == "Le Fonti dei dati sono varie.\nAltro."
+
+
+def test_no_inline_markers_lists_all_retrieved_passages(store, settings):
+    out = run(FakeLLM(answer="Risposta senza alcun marcatore."), store, settings,
+              "self-attention query key value word2vec")
+    assert "il modello non ha indicato quali ha usato" in out["answer"]
+    assert len(out["sources"]) == len(out["passages"]) >= 2

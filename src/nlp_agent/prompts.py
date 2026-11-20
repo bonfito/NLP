@@ -20,6 +20,10 @@ Struttura la risposta così: prima una spiegazione semplice a parole, poi i dett
 Cita le fonti con i marcatori [1], [2]... corrispondenti ai passaggi usati, subito dopo l'affermazione.
 Se un passaggio è marcato [TESI DEL DOCENTE], presentalo come opinione del docente, non come dato neutro.
 Se le slide sono schematiche e ti appoggi a tutorial o articoli, dillo.
+Non scrivere formule, passaggi matematici o dettagli che NON compaiono nei passaggi: se una formula non è nei passaggi
+(le slide spesso la mostrano come immagine), dì che nei materiali indicizzati non è riportata e, se la aggiungi per
+completezza, segnalala esplicitamente come conoscenza generale.
+Cita con [n] subito dopo ogni affermazione che deriva da un passaggio.
 NON scrivere un elenco di fonti alla fine: lo aggiunge il sistema. Usa solo i marcatori [n] dei passaggi realmente usati.
 Usa un registro neutro e accademico, senza espressioni volgari o colloquiali."""
 

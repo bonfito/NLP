@@ -19,7 +19,10 @@ VALID_ROUTES = {"theory", "quiz", "review", "offtopic"}
 MAX_PER_FILE = 2          # al massimo 2 chunk per file tra i passaggi: evita che un solo documento lungo affolli i risultati
 CANDIDATES_FACTOR = 4     # si recuperano k*4 candidati e poi si applica il limite per file
 
-_MODEL_SOURCES = re.compile(r"\n+\s*(?:#+\s*)?\**\s*(?:Fonti|Fonte|Sources?)\s*\**\s*:.*\Z", re.IGNORECASE | re.DOTALL)
+_MODEL_SOURCES = re.compile(
+    r"\n[ \t]*(?:#{1,6}[ \t]*)?\**[ \t]*(?:Fonti|Fonte|Sources?|Riferimenti|Bibliografia)[ \t]*\**[ \t]*(?::.*|(?:\n.*)?)\Z",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 def strip_model_sources(text: str) -> str:
