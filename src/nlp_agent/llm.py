@@ -37,9 +37,13 @@ def get_llm(s: Settings) -> LLM:
 
         return LangChainLLM(ChatAnthropic(model=s.llm_model, temperature=0))
     if p == "openai":
+        # Vale anche per servizi gratuiti compatibili OpenAI (Groq, OpenRouter, ...): basta OPENAI_BASE_URL e OPENAI_API_KEY.
+        import os
+
         from langchain_openai import ChatOpenAI
 
-        return LangChainLLM(ChatOpenAI(model=s.llm_model, temperature=0))
+        kwargs = {"base_url": os.environ["OPENAI_BASE_URL"]} if os.environ.get("OPENAI_BASE_URL") else {}
+        return LangChainLLM(ChatOpenAI(model=s.llm_model, temperature=0, max_retries=6, **kwargs))
     raise ValueError(f"LLM_PROVIDER sconosciuto: {s.llm_provider}")
 
 
