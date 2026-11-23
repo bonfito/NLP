@@ -19,7 +19,16 @@ class LangChainLLM:
     def complete(self, system: str, user: str) -> str:
         from langchain_core.messages import HumanMessage, SystemMessage
 
+        import os
+        import sys
+        import time
+
+        t0 = time.perf_counter()
         out = self.chat.invoke([SystemMessage(content=system), HumanMessage(content=user)])
+        if os.environ.get("NLP_DEBUG"):
+            dt = time.perf_counter() - t0
+            print(f"[debug] chiamata LLM: {dt:.1f}s, prompt {len(system) + len(user)} caratteri, "
+                  f"risposta {len(str(out.content))} caratteri", file=sys.stderr, flush=True)
         content = out.content
         if isinstance(content, list):
             content = "".join(p.get("text", "") if isinstance(p, dict) else str(p) for p in content)
@@ -35,8 +44,9 @@ def get_llm(s: Settings) -> LLM:
 
         # I modelli "thinking" (Qwen3.x) sul solo processore spendono minuti a ragionare e a volte restituiscono
         # contenuto vuoto: di default il ragionamento è spento. LLM_THINKING=true per riattivarlo.
+        num_ctx = {"num_ctx": int(os.environ["LLM_NUM_CTX"])} if os.environ.get("LLM_NUM_CTX") else {}
         thinking = os.environ.get("LLM_THINKING", "false").strip().lower() in ("1", "true", "yes")
-        return LangChainLLM(ChatOllama(model=s.llm_model, temperature=0, reasoning=thinking))
+        return LangChainLLM(ChatOllama(model=s.llm_model, temperature=0, reasoning=thinking, **num_ctx))
     if p == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
