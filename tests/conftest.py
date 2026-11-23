@@ -21,7 +21,7 @@ class FakeLLM:
         self.quiz = quiz
         self.calls = []
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, json_out: bool = False) -> str:
         self.calls.append(system[:30])
         if "router" in system:
             return json.dumps({"route": self.route, "topic": "self-attention", "query_en": "self-attention query key value"})

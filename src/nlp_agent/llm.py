@@ -9,14 +9,15 @@ from .config import Settings
 
 
 class LLM(Protocol):
-    def complete(self, system: str, user: str) -> str: ...
+    def complete(self, system: str, user: str, json_out: bool = False) -> str: ...
 
 
 class LangChainLLM:
-    def __init__(self, chat_model):
+    def __init__(self, chat_model, json_model=None):
         self.chat = chat_model
+        self.json_chat = json_model or chat_model   # modello "breve" per le uscite JSON (router, judge)
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, json_out: bool = False) -> str:
         from langchain_core.messages import HumanMessage, SystemMessage
 
         import os
@@ -24,7 +25,7 @@ class LangChainLLM:
         import time
 
         t0 = time.perf_counter()
-        out = self.chat.invoke([SystemMessage(content=system), HumanMessage(content=user)])
+        out = (self.json_chat if json_out else self.chat).invoke([SystemMessage(content=system), HumanMessage(content=user)])
         if os.environ.get("NLP_DEBUG"):
             dt = time.perf_counter() - t0
             print(f"[debug] chiamata LLM: {dt:.1f}s, prompt {len(system) + len(user)} caratteri, "
@@ -46,7 +47,10 @@ def get_llm(s: Settings) -> LLM:
         # contenuto vuoto: di default il ragionamento è spento. LLM_THINKING=true per riattivarlo.
         num_ctx = {"num_ctx": int(os.environ["LLM_NUM_CTX"])} if os.environ.get("LLM_NUM_CTX") else {}
         thinking = os.environ.get("LLM_THINKING", "false").strip().lower() in ("1", "true", "yes")
-        return LangChainLLM(ChatOllama(model=s.llm_model, temperature=0, reasoning=thinking, **num_ctx))
+        common = dict(model=s.llm_model, temperature=0, reasoning=thinking, **num_ctx)
+        # Su CPU il costo è quasi tutto nei token generati: risposta con tetto, JSON di router/judge forzato e corto.
+        return LangChainLLM(ChatOllama(num_predict=900, **common),
+                            ChatOllama(num_predict=300, format="json", **common))
     if p == "anthropic":
         from langchain_anthropic import ChatAnthropic
 

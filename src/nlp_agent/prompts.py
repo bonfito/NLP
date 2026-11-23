@@ -25,7 +25,8 @@ Non scrivere formule, passaggi matematici o dettagli che NON compaiono nei passa
 completezza, segnalala esplicitamente come conoscenza generale.
 Cita con [n] subito dopo ogni affermazione che deriva da un passaggio.
 NON scrivere un elenco di fonti alla fine: lo aggiunge il sistema. Usa solo i marcatori [n] dei passaggi realmente usati.
-Usa un registro neutro e accademico, senza espressioni volgari o colloquiali."""
+Usa un registro neutro e accademico, senza espressioni volgari o colloquiali.
+Sii conciso: al massimo circa 250 parole in totale, senza ripetere lo stesso concetto."""
 
 REVIEW_SYSTEM = f"""Sei un assistente di studio per il corso di NLP.
 {LANG_RULES}

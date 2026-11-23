@@ -8,7 +8,7 @@ from nlp_agent.graph import build_graph
 class EvalLLM(FakeLLM):
     """Correttore finto: 'corretta' se la risposta valutata contiene 'attention'. La baseline risponde 'Non so.'"""
 
-    def complete(self, system, user):
+    def complete(self, system, user, json_out=False):
         if "correttore" in system:
             return json.dumps({"correct": "attention" in user.split("RISPOSTA DA VALUTARE")[1].lower()})
         if system.startswith("Sei un assistente per il corso di Natural"):

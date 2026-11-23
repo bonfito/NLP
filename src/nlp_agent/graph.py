@@ -57,7 +57,7 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
 
     def router(state: AgentState) -> dict:
         q = state["question"]
-        data = extract_json(llm.complete(prompts.ROUTER_SYSTEM, q))
+        data = extract_json(llm.complete(prompts.ROUTER_SYSTEM, q, json_out=True))
         route = data.get("route") if isinstance(data, dict) else None
         if route not in VALID_ROUTES:
             route, data = _heuristic_route(q), {}
@@ -94,7 +94,7 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
             return {"verdict": {"grounded": True, "issues": "", "new_query": ""}}
         user = (f"DOMANDA: {state['question']}\n\nPASSAGGI:\n{format_passages(state['passages'])}\n\n"
                 f"RISPOSTA:\n{state['answer'].split(chr(10) + chr(10) + 'Fonti:')[0]}")
-        data = extract_json(llm.complete(prompts.JUDGE_SYSTEM, user))
+        data = extract_json(llm.complete(prompts.JUDGE_SYSTEM, user, json_out=True))
         if not isinstance(data, dict) or "grounded" not in data:
             data = {"grounded": True, "issues": "", "new_query": ""}   # judge illeggibile: non blocco la risposta
         out = {"verdict": data}

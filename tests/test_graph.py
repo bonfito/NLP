@@ -60,7 +60,7 @@ def test_professor_opinion_marked_in_prompt(store, settings):
     seen = {}
 
     class Spy(FakeLLM):
-        def complete(self, system, user):
+        def complete(self, system, user, json_out=False):
             if "assistente di studio" in system and "PASSAGGI" in user:
                 seen["user"] = user
             return super().complete(system, user)
@@ -92,7 +92,7 @@ def test_router_query_is_english_search_query(store, settings):
 
 def test_router_falls_back_to_question_without_query_en(store, settings):
     class NoQuery(FakeLLM):
-        def complete(self, system, user):
+        def complete(self, system, user, json_out=False):
             if "router" in system:
                 return '{"route": "theory"}'
             return super().complete(system, user)
