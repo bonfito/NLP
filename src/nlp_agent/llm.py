@@ -23,7 +23,7 @@ class LangChainLLM:
         content = out.content
         if isinstance(content, list):
             content = "".join(p.get("text", "") if isinstance(p, dict) else str(p) for p in content)
-        return content
+        return re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
 
 
 def get_llm(s: Settings) -> LLM:
@@ -31,7 +31,12 @@ def get_llm(s: Settings) -> LLM:
     if p == "ollama":
         from langchain_ollama import ChatOllama
 
-        return LangChainLLM(ChatOllama(model=s.llm_model, temperature=0))
+        import os
+
+        # I modelli "thinking" (Qwen3.x) sul solo processore spendono minuti a ragionare e a volte restituiscono
+        # contenuto vuoto: di default il ragionamento è spento. LLM_THINKING=true per riattivarlo.
+        thinking = os.environ.get("LLM_THINKING", "false").strip().lower() in ("1", "true", "yes")
+        return LangChainLLM(ChatOllama(model=s.llm_model, temperature=0, reasoning=thinking))
     if p == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
