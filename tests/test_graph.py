@@ -139,3 +139,10 @@ def test_no_inline_markers_lists_all_retrieved_passages(store, settings):
               "self-attention query key value word2vec")
     assert "il modello non ha indicato quali ha usato" in out["answer"]
     assert len(out["sources"]) == len(out["passages"]) >= 2
+
+
+def test_format_passages_only_keeps_original_numbers():
+    from nlp_agent.nodes.helpers import format_passages
+    ps = [{"file": f"F{i}.pdf", "kind": "slide", "macro": "m", "locator": "slide 1", "text": f"t{i}"} for i in range(1, 5)]
+    out = format_passages(ps, only=[2, 4])
+    assert "[2] F2.pdf" in out and "[4] F4.pdf" in out and "F1.pdf" not in out and "F3.pdf" not in out

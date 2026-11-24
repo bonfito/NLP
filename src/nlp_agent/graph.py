@@ -8,7 +8,7 @@ from langgraph.graph import END, START, StateGraph
 from . import prompts
 from .config import Settings
 from .llm import LLM, extract_json
-from .nodes.helpers import format_passages, sources_block
+from .nodes.helpers import cited_indices, format_passages, sources_block
 from .state import AgentState
 from .store import VectorStore
 
@@ -105,8 +105,11 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
     def judge(state: AgentState) -> dict:
         if not state["passages"]:
             return {"verdict": {"grounded": True, "issues": "", "new_query": ""}}
-        user = (f"DOMANDA: {state['question']}\n\nPASSAGGI:\n{format_passages(state['passages'])}\n\n"
-                f"RISPOSTA:\n{state['answer'].split(chr(10) + chr(10) + 'Fonti:')[0]}")
+        body = state["answer"].split(chr(10) + chr(10) + "Fonti:")[0]
+        # Il judge legge solo i passaggi citati nella risposta (se ce ne sono): su CPU il prompt lungo è il costo principale.
+        used = cited_indices(body, len(state["passages"])) or None
+        user = (f"DOMANDA: {state['question']}\n\nPASSAGGI:\n{format_passages(state['passages'], only=used)}\n\n"
+                f"RISPOSTA:\n{body}")
         data = extract_json(llm.complete(prompts.JUDGE_SYSTEM, user, json_out=True))
         if not isinstance(data, dict) or "grounded" not in data:
             data = {"grounded": True, "issues": "", "new_query": ""}   # judge illeggibile: non blocco la risposta

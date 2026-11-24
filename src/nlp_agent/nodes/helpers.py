@@ -6,9 +6,12 @@ import re
 KIND_IT = {"slide": "slide", "article": "articolo", "tutorial": "tutorial", "book": "libro/capitolo"}
 
 
-def format_passages(passages: list[dict]) -> str:
+def format_passages(passages: list[dict], only: list[int] | None = None) -> str:
+    """Passaggi numerati da 1. Con `only` (numeri 1-based) include solo quelli, mantenendo la numerazione originale."""
     blocks = []
     for i, p in enumerate(passages, 1):
+        if only is not None and i not in only:
+            continue
         tag = " [TESI DEL DOCENTE]" if p.get("stance") == "professor_opinion" else ""
         head = f"[{i}] {p['file']} ({KIND_IT.get(p['kind'], p['kind'])}, {p['macro']}, {p['locator']}){tag}"
         blocks.append(f"{head}\n{p['text']}")
