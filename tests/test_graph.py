@@ -146,3 +146,9 @@ def test_format_passages_only_keeps_original_numbers():
     ps = [{"file": f"F{i}.pdf", "kind": "slide", "macro": "m", "locator": "slide 1", "text": f"t{i}"} for i in range(1, 5)]
     out = format_passages(ps, only=[2, 4])
     assert "[2] F2.pdf" in out and "[4] F4.pdf" in out and "F1.pdf" not in out and "F3.pdf" not in out
+
+
+def test_console_safe_replaces_unprintable_typography():
+    from nlp_agent.cli import _console_safe
+    assert _console_safe("self\u2011attention \u2212 uno\u202fdue") == "self-attention - uno due"
+    assert _console_safe("perché è così") == "perché è così"

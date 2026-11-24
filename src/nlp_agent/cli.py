@@ -8,7 +8,21 @@ import sys
 from .config import Settings
 
 
+_SAFE = {"\u2011": "-", "\u2212": "-", "\u202f": " ", "\u2009": " ", "\u200b": ""}
+
+
+def _console_safe(text: str) -> str:
+    """La console di Windows (cp1252/cp850) non stampa alcuni caratteri tipografici che i modelli usano
+    (trattino non separabile, segno meno, spazi sottili): li sostituisco, il resto passa invariato."""
+    return text.translate(str.maketrans(_SAFE))
+
+
 def main(argv=None) -> int:
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")    # un carattere non stampabile non deve far crollare il programma
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(prog="nlp_agent")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p_idx = sub.add_parser("index", help="costruisce l'indice da data/raw")
@@ -39,7 +53,7 @@ def main(argv=None) -> int:
     app = build_graph(get_llm(s), store, s)
 
     if args.cmd == "ask":
-        print(ask(app, args.question)["answer"])
+        print(_console_safe(ask(app, args.question)["answer"]))
         return 0
     history: list[dict] = []
     print("Assistente NLP — scrivi una domanda, 'quiz su <argomento>', 'ripasso di <argomento>'. Ctrl+C per uscire.")
@@ -51,7 +65,7 @@ def main(argv=None) -> int:
         if q:
             state = ask(app, q, history)
             history = state["messages"]
-            print("\n" + state["answer"])
+            print("\n" + _console_safe(state["answer"]))
 
 
 if __name__ == "__main__":
