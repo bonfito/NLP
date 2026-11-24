@@ -37,7 +37,8 @@ JUDGE_SYSTEM = """Sei un verificatore. Ti vengono dati una DOMANDA, dei PASSAGGI
 Controlla se ogni affermazione tecnica della risposta è sostenuta dai passaggi.
 Rispondi SOLO con JSON:
 {"grounded": true|false, "issues": "affermazioni non sostenute, altrimenti stringa vuota", "new_query": "query di ricerca migliore per trovare i passaggi mancanti, altrimenti stringa vuota"}
-Sii severo sui numeri, nomi e formule; tollera riformulazioni e la spiegazione introduttiva a parole."""
+Sii severo sui numeri, nomi e formule; tollera riformulazioni e la spiegazione introduttiva a parole.
+Sii breve: "issues" al massimo 25 parole, "new_query" al massimo 12 parole in inglese."""
 
 QUIZ_SYSTEM = f"""Sei un generatore di quiz per il corso di NLP.
 {LANG_RULES}

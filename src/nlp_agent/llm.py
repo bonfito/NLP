@@ -50,7 +50,7 @@ def get_llm(s: Settings) -> LLM:
         common = dict(model=s.llm_model, temperature=0, reasoning=thinking, **num_ctx)
         # Su CPU il costo è quasi tutto nei token generati: risposta con tetto, JSON di router/judge forzato e corto.
         return LangChainLLM(ChatOllama(num_predict=900, **common),
-                            ChatOllama(num_predict=300, format="json", **common))
+                            ChatOllama(num_predict=200, format="json", **common))
     if p == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
