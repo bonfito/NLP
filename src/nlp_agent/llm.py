@@ -62,6 +62,9 @@ def get_llm(s: Settings) -> LLM:
         from langchain_openai import ChatOpenAI
 
         kwargs = {"base_url": os.environ["OPENAI_BASE_URL"]} if os.environ.get("OPENAI_BASE_URL") else {}
+        # Modelli con ragionamento (es. openai/gpt-oss-120b su Groq): "low" riduce i token spesi a ragionare.
+        if os.environ.get("LLM_REASONING_EFFORT"):
+            kwargs["reasoning_effort"] = os.environ["LLM_REASONING_EFFORT"]
         return LangChainLLM(ChatOpenAI(model=s.llm_model, temperature=0, max_retries=6, **kwargs))
     raise ValueError(f"LLM_PROVIDER sconosciuto: {s.llm_provider}")
 
