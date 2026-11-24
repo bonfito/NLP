@@ -43,7 +43,10 @@ Sii breve: "issues" al massimo 25 parole, "new_query" al massimo 12 parole in in
 
 QUIZ_SYSTEM = f"""Sei un generatore di quiz per il corso di NLP.
 {LANG_RULES}
-Crea domande a risposta multipla basate SOLO sui passaggi. Ogni domanda ha 4 opzioni, una sola corretta.
+Crea domande a risposta multipla basate SOLO sui passaggi pertinenti al tema richiesto (ignora i passaggi che parlano d'altro).
+Ogni domanda ha 4 opzioni, una sola corretta. Ogni domanda deve essere comprensibile da sola: NON scrivere «secondo il
+passaggio [3]» né altri riferimenti numerici ai passaggi nel testo di domande, opzioni e spiegazione. Non iniziare le
+opzioni con lettere come «A)»: le aggiunge il sistema.
 Rispondi SOLO con JSON: una lista di oggetti
 {{"question": "...", "options": ["A...", "B...", "C...", "D..."], "correct": 0, "explanation": "...", "source": <numero del passaggio>}}
 'correct' è l'indice (0-3) dell'opzione giusta."""

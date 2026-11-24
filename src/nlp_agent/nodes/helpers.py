@@ -36,7 +36,7 @@ def sources_block(answer: str, passages: list[dict]) -> tuple[str, list[dict]]:
     """Elenco 'Fonti' costruito dal codice.
     Se la risposta contiene marcatori [n], elenca quei passaggi. Altrimenti (modelli piccoli che non citano)
     elenca TUTTI i passaggi consultati, con una nota: meglio una fonte in più che una fonte nascosta."""
-    idx = cited_indices(answer, len(passages))
+    idx = sorted(cited_indices(answer, len(passages)))
     note = ""
     if not idx:
         idx = list(range(1, len(passages) + 1))

@@ -152,3 +152,10 @@ def test_console_safe_replaces_unprintable_typography():
     from nlp_agent.cli import _console_safe
     assert _console_safe("self\u2011attention \u2212 uno\u202fdue") == "self-attention - uno due"
     assert _console_safe("perché è così") == "perché è così"
+
+
+def test_strip_label_removes_duplicate_option_letters():
+    from nlp_agent.graph import _strip_label
+    assert _strip_label("A) Le prestazioni migliorano") == "Le prestazioni migliorano"
+    assert _strip_label("b. testo") == "testo"
+    assert _strip_label("Attention is all you need") == "Attention is all you need"

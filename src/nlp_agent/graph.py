@@ -33,6 +33,11 @@ def strip_model_sources(text: str) -> str:
 MIN_SLIDES = 2   # le slide hanno poco testo e perdono contro articoli lunghi: ne garantisco almeno 2 se pertinenti
 
 
+def _strip_label(option: str) -> str:
+    """Toglie un'eventuale etichetta 'A)' / 'B.' che il modello ha già scritto (evita 'A) A) ...')."""
+    return re.sub(r"^\s*[A-Da-d][\)\.:]\s+", "", str(option))
+
+
 def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE, min_slides: int = MIN_SLIDES) -> list[dict]:
     """Prende i migliori k passaggi con al massimo `per_file` chunk dallo stesso file (ordine di similarità conservato).
     Se tra i candidati ci sono slide ma meno di `min_slides` nella selezione, le migliori slide scartate prendono il
@@ -149,7 +154,7 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
             from .nodes.helpers import source_entry
             e = source_entry(src)
             entries.append(e)
-            opts = "\n".join(f"   {'ABCD'[i]}) {o}" for i, o in enumerate(it["options"]))
+            opts = "\n".join(f"   {'ABCD'[i]}) {_strip_label(o)}" for i, o in enumerate(it["options"]))
             lines.append(f"{n}. {it['question']}\n{opts}\n   Risposta: {'ABCD'[it['correct']]} — {it['explanation']}\n"
                          f"   Fonte: {e['file']} — {e['macro']}, {e['kind']}, {e['locator']}")
         text = "\n\n".join(lines)
