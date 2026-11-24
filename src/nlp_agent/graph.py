@@ -30,17 +30,30 @@ def strip_model_sources(text: str) -> str:
     return _MODEL_SOURCES.sub("", text).rstrip()
 
 
-def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE) -> list[dict]:
-    """Prende i migliori k passaggi con al massimo `per_file` chunk dallo stesso file (ordine di similarità conservato)."""
-    out, count = [], {}
+MIN_SLIDES = 2   # le slide hanno poco testo e perdono contro articoli lunghi: ne garantisco almeno 2 se pertinenti
+
+
+def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE, min_slides: int = MIN_SLIDES) -> list[dict]:
+    """Prende i migliori k passaggi con al massimo `per_file` chunk dallo stesso file (ordine di similarità conservato).
+    Se tra i candidati ci sono slide ma meno di `min_slides` nella selezione, le migliori slide scartate prendono il
+    posto dei passaggi non-slide con punteggio più basso."""
+    out, rest, count = [], [], {}
     for p in passages:
-        if count.get(p["file"], 0) < per_file:
+        if count.get(p["file"], 0) < per_file and len(out) < k:
             out.append(p)
             count[p["file"]] = count.get(p["file"], 0) + 1
-        if len(out) == k:
+        else:
+            rest.append(p)
+    slides_in = sum(p.get("kind") == "slide" for p in out)
+    extra = [p for p in rest if p.get("kind") == "slide"]
+    while slides_in < min_slides and extra:
+        victim = next((i for i in range(len(out) - 1, -1, -1) if out[i].get("kind") != "slide"), None)
+        if victim is None:
             break
+        out.pop(victim)
+        out.append(extra.pop(0))
+        slides_in += 1
     return out
-
 
 
 def _heuristic_route(q: str) -> str:

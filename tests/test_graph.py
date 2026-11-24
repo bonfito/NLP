@@ -114,6 +114,18 @@ def test_diversify_caps_chunks_per_file():
     assert [p["file"] for p in out] == ["Long.pdf", "Long.pdf", "Slide.pdf"]
 
 
+def test_diversify_guarantees_slides():
+    from nlp_agent.graph import diversify
+    arts = [{"file": f"Art{i}.pdf", "kind": "article", "id": i} for i in range(6)]
+    slides = [{"file": "DNNs.pdf", "kind": "slide", "id": 20}, {"file": "Emb.pdf", "kind": "slide", "id": 21},
+              {"file": "X.pdf", "kind": "slide", "id": 22}]
+    out = diversify(arts + slides, k=4, min_slides=2)
+    assert len(out) == 4
+    assert sum(p["kind"] == "slide" for p in out) == 2
+    assert [p["id"] for p in out[:2]] == [0, 1]           # i migliori restano
+    assert diversify(arts, k=4, min_slides=2) == arts[:4]  # senza slide candidate non cambia nulla
+
+
 def test_markdown_heading_sources_without_colon_are_stripped():
     from nlp_agent.graph import strip_model_sources
     t = "Spiegazione [1].\n\n### Fonti\n- [1] A.pdf\n- [DNNs.pdf (slide)]"
