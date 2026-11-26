@@ -1,11 +1,11 @@
 # Set di valutazione. Ogni domanda: risposta attesa breve + fonte/macroargomento corretti.
 # expected_files: basta UNO di questi nelle fonti restituite perché la fonte sia "corretta".
 # route: theory | quiz | offtopic (default theory)
+# expect_opinion_flag: true se la risposta deve attribuire la tesi al docente.
+# "specifica" = dettaglio che un LLM non conosce a memoria: serve a confrontare l'agente col baseline senza retrieval.
 #
-# STATO: 24 domande scritte su testo letto in Embeddings, DNNs, PromptingLLMs, SOTA4LLMs2026, Agents,
-# NLPApplications, LangGraph_Concepts, UnderstandingTokenization, ChurchETAL2024_RAG.
-# DA AGGIUNGERE (Part I: n-grammi, probabilità, valutazione, corpora; Part II: ASR, parsing, WordNet/WSD, FrameNet)
-# fino a 30-40 domande: leggete la slide, scrivete la domanda e controllate la risposta sul materiale.
+# STATO: 40 domande. Le risposte attese sono scritte leggendo i file del corso (slide, tutorial, articoli).
+# Ogni risposta attesa va ricontrollata da voi sulla slide/pagina prima della valutazione finale.
 
 - id: emb-01
   question: "Che cos'è la Distributional Hypothesis?"
@@ -127,6 +127,84 @@
   expected_files: [ChurchETAL2024_RAG.pdf]
 
 # ---- fuori tema: l'agente deve rifiutare senza fare retrieval ----
+
+# ---- Part I: probabilità, n-grammi, valutazione, corpora ----
+- id: pro-02
+  question: "Qual è la definizione classica di probabilità di un evento A quando tutti gli eventi semplici sono equiprobabili?"
+  expected_answer: "p(A) = |A| / |Ω|, cioè la cardinalità dell'evento diviso quella dello spazio campionario Ω."
+  expected_macro: Probabilità
+  expected_files: [ProbabilityE.pdf]
+- id: ng-01
+  question: "Perché non si calcola direttamente p(w1...wn) con la regola della catena e si usano invece i modelli n-gram?"
+  expected_answer: "Per la sparsità dei dati (legge di Zipf): con 20000 forme le combinazioni di due parole sono 400 milioni. Si riduce il prodotto con modelli unigram, bigram (p(wi|wi-1)) o trigram (p(wi|wi-2,wi-1))."
+  expected_macro: N-grammi
+  expected_files: [ngramsE.pdf]
+- id: ev-01
+  question: "Quali sono la definizione di precision e di recall, e perché l'accuracy è un cattivo indicatore sulle classi sbilanciate?"
+  expected_answer: "Precision = TP/(FP+TP); Recall = TP/(FN+TP). L'accuracy (TN+TP)/totale è povera con classi sbilanciate (skewed)."
+  expected_macro: Valutazione
+  expected_files: [EvaluationNLP.pdf]
+- id: ev-02
+  question: "Quali sono i passi di una valutazione basata su gold standard secondo le slide, e con cosa si interpretano i punteggi?"
+  expected_answer: "Linee guida di annotazione, corpus gold standard (training/validation/test) con inter-annotator agreement, strumento di scoring; rilascio del training; valutazione su test corpus 'blind'. I punteggi si interpretano rispetto a baseline (limite inferiore) e a un tetto (ceiling) dato dall'accordo tra annotatori umani."
+  expected_macro: Valutazione
+  expected_files: [EvaluationNLP.pdf]
+- id: co-01
+  question: "Con quali quattro dimensioni le slide definiscono il concetto di corpus?"
+  expected_answer: "Campionamento e rappresentatività, dimensione finita, forma leggibile da macchina, riferimento standard."
+  expected_macro: Corpora
+  expected_files: [CorporaE.pdf]
+
+# ---- Part II: ASR, PoS tagging, parsing, semantica lessicale ----
+- id: asr-01
+  question: "A cosa serve la CTC nel riconoscimento del parlato con reti neurali e come si misura la qualità di un ASR?"
+  expected_answer: "La CTC (Connectionist Temporal Classification) allinea automaticamente l'input continuo (audio) con l'output discreto (caratteri) senza allineamento manuale nei dati. La qualità si misura con la Word Error Rate (inserzioni, cancellazioni e sostituzioni rispetto al numero di parole)."
+  expected_macro: Parlato e ASR
+  expected_files: [ASRwithDNNs.html]
+- id: pos-01
+  question: "Che cosa si intende per 'unknown word' nel PoS tagging task di EVALITA 2007 e come si misura l'accuratezza su di esse?"
+  expected_answer: "Una parola ignota è un token presente nel test set ma non nel development set; l'Unknown Words Tagging Accuracy è la Tagging Accuracy calcolata solo su questi token."
+  expected_macro: Morfologia e PoS tagging
+  expected_files: [EVALITA2007_PRES_POSTag_Task.pdf]
+- id: pos-02
+  question: "Quale sistema ha ottenuto la Tagging Accuracy più alta con il tagset EAGLES-like in EVALITA 2007 e con che punteggio?"
+  expected_answer: "FBKirst (Zanoli), basato su Support Vector Machines: 98.04% di Tagging Accuracy (95.02% sulle unknown words)."
+  expected_macro: Morfologia e PoS tagging
+  expected_files: [EVALITA2007_PRES_POSTag_Task.pdf]
+- id: par-01
+  question: "Che cos'è un treebank e come viene costruito di solito?"
+  expected_answer: "Un corpus in cui ogni frase è annotata sintatticamente con un albero di parsing; di solito le frasi sono analizzate automaticamente da un parser e poi corrette a mano da linguisti (es. Penn Treebank)."
+  expected_macro: Grammatiche e parsing
+  expected_files: ["GrammarsAndParsing (1).pdf", GrammarsAndParsing.pdf]
+- id: par-02
+  question: "Perché è interessante studiare la complessità formale delle lingue naturali?"
+  expected_answer: "Dà informazioni sulla struttura generale delle lingue, permette di valutare l'adeguatezza dei formalismi grammaticali, fissa un limite inferiore alla complessità computazionale dei compiti NLP e permette conclusioni sull'elaborazione umana del linguaggio."
+  expected_macro: Grammatiche e parsing
+  expected_files: ["GrammarsAndParsing (1).pdf", GrammarsAndParsing.pdf]
+- id: lex-01
+  question: "Che cos'è un synset in WordNet e quali relazioni collegano i synset?"
+  expected_answer: "Un synset è un insieme di sinonimi che rappresenta un significato (es. {board, plank}). Tra synset: iponimia/iperonimia (ISA) e meronimia (HAS-A); l'antonimia lega invece lessemi."
+  expected_macro: Semantica lessicale
+  expected_files: [LexicalSemantics_WSD.pdf, WordNets5papers.pdf, MillerFellbaumLRE2007.pdf]
+- id: lex-02
+  question: "Quali approcci alla Word Sense Disambiguation sono presentati nelle slide?"
+  expected_answer: "WSD supervisionata con Naïve Bayes (conteggi da un corpus annotato), approccio basato su dizionario con l'algoritmo di Lesk, e una soluzione con reti neurali (Bevilacqua e Navigli 2020) su una risorsa lessicale vista come grafo."
+  expected_macro: Semantica lessicale
+  expected_files: [LexicalSemantics_WSD.pdf]
+- id: fn-01
+  question: "Che cos'è un frame in Frame Semantics e quali dimensioni ha FrameNet?"
+  expected_answer: "Un frame rappresenta un evento o scenario con frame elements che partecipano con ruoli diversi (es. COMMERCIAL TRANSACTION con SELLER, BUYER, GOODS, MONEY). FrameNet: oltre 13.000 sensi di parola, oltre 200.000 frasi annotate a mano collegate a più di 1.200 frame."
+  expected_macro: Semantica lessicale
+  expected_files: [FrameSemantics.pdf]
+
+# ---- Tesi del docente (slide con opinioni personali) ----
+- id: en-01
+  question: "Cosa sostengono le slide sul consumo energetico degli LLM rispetto ad altre infrastrutture come il CERN?"
+  expected_answer: "Tesi del docente: per singolo prompt un LLM consuma poca elettricità; con ChatGPT stimato in circa 320 GWh/anno (18 miliardi di messaggi/settimana, 0,34 Wh a query) mentre il CERN può arrivare a 1,3 TWh/anno (circa 4 volte), eppure per il CERN nessuno si lamenta e i benefici sono, secondo lui, molto limitati."
+  expected_macro: Stato dell'arte LLM
+  expected_files: [LLMEnergyConsumption.pdf]
+  expect_opinion_flag: true
+
 - id: off-01
   question: "Che tempo farà domani a Bologna?"
   route: offtopic

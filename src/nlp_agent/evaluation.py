@@ -87,3 +87,25 @@ def to_markdown(summary: dict) -> str:
         f"| Rifiuto domande fuori tema | {pct(summary['offtopic_refusal'])} |",
         f"| Domande in cui il judge è intervenuto | {summary['questions_with_judge_correction']} |",
     ])
+
+
+def select_questions(questions: list[dict], limit: int | None) -> list[dict]:
+    """Con --limit N prende domande a rotazione dai vari gruppi (prefisso dell'id: emb, dl, off, en, ...),
+    così un test ridotto include argomenti diversi, fuori tema e tesi del docente, non solo le prime N."""
+    if not limit or limit >= len(questions):
+        return questions
+    groups: dict[str, list[dict]] = {}
+    for q in questions:
+        groups.setdefault(q["id"].split("-")[0], []).append(q)
+    # i gruppi speciali (fuori tema, tesi del docente) vengono per primi nella rotazione
+    order = sorted(groups, key=lambda g: (0 if g == "off" or any(x.get("expect_opinion_flag") for x in groups[g]) else 1))
+    out: list[dict] = []
+    while len(out) < limit:
+        added = False
+        for g in order:
+            if groups[g] and len(out) < limit:
+                out.append(groups[g].pop(0))
+                added = True
+        if not added:
+            break
+    return out

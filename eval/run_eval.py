@@ -10,7 +10,7 @@ import yaml
 sys.path.insert(0, "src")
 from nlp_agent.config import Settings
 from nlp_agent.embeddings import get_embedder
-from nlp_agent.evaluation import run_eval, to_markdown
+from nlp_agent.evaluation import run_eval, select_questions, to_markdown
 from nlp_agent.graph import build_graph
 from nlp_agent.llm import get_llm
 from nlp_agent.store import VectorStore
@@ -22,7 +22,7 @@ ap.add_argument("--questions", default="eval/questions.yaml")
 args = ap.parse_args()
 
 s = Settings.from_env()
-questions = yaml.safe_load(Path(args.questions).read_text(encoding="utf-8"))[: args.limit]
+questions = select_questions(yaml.safe_load(Path(args.questions).read_text(encoding="utf-8")), args.limit)
 store = VectorStore(s.index_dir, get_embedder(s.embedding_model))
 if store.count() == 0:
     sys.exit("Indice vuoto: esegui prima `python -m nlp_agent.cli index`.")

@@ -46,3 +46,19 @@ def test_offtopic_refusal_measured(store, settings):
 def test_summarize_handles_empty():
     s = summarize([])
     assert s["agent_correct"] is None and s["total_judge_corrections"] == 0
+
+
+def test_select_questions_is_balanced_and_includes_special_groups():
+    import yaml
+    from pathlib import Path
+    from nlp_agent.evaluation import select_questions
+    qs = yaml.safe_load(Path("eval/questions.yaml").read_text(encoding="utf-8"))
+    assert len(qs) >= 30 and len({q["id"] for q in qs}) == len(qs)
+    sel = select_questions(qs, 8)
+    ids = [q["id"] for q in sel]
+    assert len(ids) == 8 and len(set(ids)) == 8
+    assert any(i.startswith("off") for i in ids)
+    assert any(q.get("expect_opinion_flag") for q in sel)
+    assert select_questions(qs, None) == qs
+    for q in qs:
+        assert q.get("expected_answer") and (q.get("route") == "offtopic" or (q.get("expected_macro") and q.get("expected_files")))
