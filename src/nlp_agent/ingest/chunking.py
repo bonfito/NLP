@@ -71,6 +71,18 @@ def _locator(kind: str, pages: list[int], heads: list[str]) -> tuple[str, int, i
     return "", -1, -1
 
 
+_YEAR = re.compile(r"\b(?:19|20)\d{2}[a-z]?\b")
+_CITE = re.compile(r"\b(?:et al\.|doi|pp\.|arXiv|Proceedings|Journal|Press|vol\.|Vol\.)", re.IGNORECASE)
+
+
+def looks_like_references(text: str) -> bool:
+    """True per i chunk che sono elenchi bibliografici (tanti anni e formule di citazione per 1000 caratteri):
+    in ricerca fanno rumore perché citano molti titoli e nomi senza spiegare nulla."""
+    years, cites = len(_YEAR.findall(text)), len(_CITE.findall(text))
+    per_k = 1000 / max(len(text), 1)
+    return years >= 4 and years * per_k >= 6 and cites * per_k >= 3
+
+
 def chunk_document(filename: str, doc: LoadedDoc, info: CourseFile) -> list[Chunk]:
     """Slide: slide consecutive unite fino a ~700 caratteri (molte sono quasi vuote).
     Articoli/libri/tutorial: paragrafi in ~1100 caratteri con piccola sovrapposizione."""
@@ -87,7 +99,7 @@ def chunk_document(filename: str, doc: LoadedDoc, info: CourseFile) -> list[Chun
     out = []
     for n, (text, pages, heads) in enumerate(_pack(blocks, target, max_chars, overlap)):
         text = text.strip()
-        if len(text) < 30:
+        if len(text) < 30 or (info.kind == "article" and looks_like_references(text)):
             continue
         loc, p0, p1 = _locator(info.kind, pages, heads)
         out.append(Chunk(id=f"{filename}::{n:04d}", text=text,

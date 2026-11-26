@@ -174,3 +174,19 @@ def test_professor_opinion_note_added_by_code():
     assert opinion_note("Secondo il docente, X [1].", [{"stance": "professor_opinion"}]) == ""
     assert opinion_note("Risposta [1].", [{"stance": ""}]) == ""
     assert "[2]" in opinion_note("A [1] e B [2].", [{"stance": ""}, {"stance": "professor_opinion"}])
+
+
+def test_bm25_finds_exact_rare_terms():
+    from nlp_agent.store import BM25
+    docs = ["energy of language models and their training cost", "LHC at CERN uses 1.3 TWh per year",
+            "language models predict the next word"]
+    bm = BM25(["a", "b", "c"], docs)
+    assert bm.top("consumption compared to CERN", 2)[0] == "b"
+    assert bm.top("CERN", 1) == ["b"]
+    assert bm.top("zzzz", 3) == []
+
+
+def test_hybrid_query_returns_lexical_match_and_respects_k(store):
+    out = store.query("CERN electricity", k=3)
+    assert len(out) <= 3
+    assert store.query("self-attention", k=2, hybrid=False)

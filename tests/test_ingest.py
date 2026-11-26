@@ -45,3 +45,15 @@ def test_html_sections(tmp_path):
     assert "x=1" not in " ".join(u.text for u in doc.units)
     chunks = chunk_document("t.html", doc, CourseFile("Part III", "Agenti", "tutorial"))
     assert chunks[0].metadata["locator"].startswith("sezione")
+
+
+def test_reference_lists_are_detected_but_prose_is_not():
+    from nlp_agent.ingest.chunking import looks_like_references
+    refs = ("Hendrycks D., Burns C. (2020). Measuring massive multitask language understanding. Proceedings of ICLR, pp. 41-48. "
+            "Morris J., Yoo J.Y. (2020). TextAttack: a framework for adversarial attacks. Proceedings of EMNLP, pp. 119-126. "
+            "Vaswani A. et al. (2017). Attention is all you need. Advances in NIPS, Vol. 30, pp. 5998-6008. "
+            "Devlin J. et al. (2019). BERT: pre-training of deep bidirectional transformers. Proceedings of NAACL, pp. 4171-4186.")
+    prose = ("Self-attention lets every token weigh the other tokens of the same sequence. Introduced in 2017, it replaced "
+             "recurrence in most architectures and made training easier to parallelise on modern hardware accelerators.")
+    assert looks_like_references(refs)
+    assert not looks_like_references(prose)
