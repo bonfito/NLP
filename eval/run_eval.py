@@ -18,11 +18,15 @@ from nlp_agent.store import VectorStore
 ap = argparse.ArgumentParser()
 ap.add_argument("--limit", type=int)
 ap.add_argument("--no-baseline", action="store_true")
+ap.add_argument("--ids", nargs="*", help="solo queste domande, es. --ids en-01 sota-01")
 ap.add_argument("--questions", default="eval/questions.yaml")
 args = ap.parse_args()
 
 s = Settings.from_env()
-questions = select_questions(yaml.safe_load(Path(args.questions).read_text(encoding="utf-8")), args.limit)
+questions = yaml.safe_load(Path(args.questions).read_text(encoding="utf-8"))
+if args.ids:
+    questions = [q for q in questions if q["id"] in args.ids]
+questions = select_questions(questions, args.limit)
 store = VectorStore(s.index_dir, get_embedder(s.embedding_model))
 if store.count() == 0:
     sys.exit("Indice vuoto: esegui prima `python -m nlp_agent.cli index`.")

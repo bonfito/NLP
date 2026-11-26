@@ -159,3 +159,18 @@ def test_strip_label_removes_duplicate_option_letters():
     assert _strip_label("A) Le prestazioni migliorano") == "Le prestazioni migliorano"
     assert _strip_label("b. testo") == "testo"
     assert _strip_label("Attention is all you need") == "Attention is all you need"
+
+
+def test_slides_get_higher_per_file_cap():
+    from nlp_agent.graph import diversify
+    ps = [{"file": "Deck.pdf", "kind": "slide", "id": i} for i in range(4)] + [{"file": "Art.pdf", "kind": "article", "id": 9}]
+    out = diversify(ps, k=6)
+    assert sum(p["file"] == "Deck.pdf" for p in out) == 4
+
+
+def test_professor_opinion_note_added_by_code():
+    from nlp_agent.graph import opinion_note
+    assert "docente" in opinion_note("Risposta senza menzione [1].", [{"stance": "professor_opinion"}])
+    assert opinion_note("Secondo il docente, X [1].", [{"stance": "professor_opinion"}]) == ""
+    assert opinion_note("Risposta [1].", [{"stance": ""}]) == ""
+    assert "[2]" in opinion_note("A [1] e B [2].", [{"stance": ""}, {"stance": "professor_opinion"}])

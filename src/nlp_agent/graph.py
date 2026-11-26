@@ -16,6 +16,7 @@ OFFTOPIC_MSG = ("Posso aiutarti solo su argomenti del corso di NLP (embeddings, 
                 "parsing, ecc.). Prova a riformulare la domanda in relazione al corso.")
 NO_PASSAGES_MSG = "Non ho trovato nei materiali del corso passaggi pertinenti a questa richiesta."
 VALID_ROUTES = {"theory", "quiz", "review", "offtopic"}
+MAX_SLIDES_PER_FILE = 4   # un deck di slide ha pochi chunk e spesso è LUI la risposta: più margine che per gli articoli
 MAX_PER_FILE = 2          # al massimo 2 chunk per file tra i passaggi: evita che un solo documento lungo affolli i risultati
 CANDIDATES_FACTOR = 4     # si recuperano k*4 candidati e poi si applica il limite per file
 
@@ -33,18 +34,30 @@ def strip_model_sources(text: str) -> str:
 MIN_SLIDES = 2   # le slide hanno poco testo e perdono contro articoli lunghi: ne garantisco almeno 2 se pertinenti
 
 
+def opinion_note(text: str, passages: list[dict]) -> str:
+    """Le tesi personali del docente vanno presentate come sue: se il modello non lo ha detto, la nota la aggiunge il codice."""
+    used = cited_indices(text, len(passages)) or list(range(1, len(passages) + 1))
+    opinion = [i for i in used if passages[i - 1].get("stance") == "professor_opinion"]
+    if not opinion or "docente" in text.lower():
+        return ""
+    refs = ", ".join(f"[{i}]" for i in opinion)
+    return f"\n\nNota: i passaggi {refs} riportano tesi personali del docente (prof. Tamburini), non dati neutri."
+
+
 def _strip_label(option: str) -> str:
     """Toglie un'eventuale etichetta 'A)' / 'B.' che il modello ha già scritto (evita 'A) A) ...')."""
     return re.sub(r"^\s*[A-Da-d][\)\.:]\s+", "", str(option))
 
 
-def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE, min_slides: int = MIN_SLIDES) -> list[dict]:
+def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE, min_slides: int = MIN_SLIDES,
+              per_file_slide: int = MAX_SLIDES_PER_FILE) -> list[dict]:
     """Prende i migliori k passaggi con al massimo `per_file` chunk dallo stesso file (ordine di similarità conservato).
     Se tra i candidati ci sono slide ma meno di `min_slides` nella selezione, le migliori slide scartate prendono il
     posto dei passaggi non-slide con punteggio più basso."""
     out, rest, count = [], [], {}
     for p in passages:
-        if count.get(p["file"], 0) < per_file and len(out) < k:
+        cap = per_file_slide if p.get("kind") == "slide" else per_file
+        if count.get(p["file"], 0) < cap and len(out) < k:
             out.append(p)
             count[p["file"]] = count.get(p["file"], 0) + 1
         else:
@@ -97,6 +110,7 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
         text = strip_model_sources(text)
         block, entries = sources_block(text, state["passages"])
         full = f"{text}\n\nFonti:\n{block}"
+        full += opinion_note(text, state["passages"])
         return {"answer": full, "sources": entries, "messages": [{"role": "assistant", "content": full}]}
 
     def answer(state: AgentState) -> dict:
