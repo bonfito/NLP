@@ -190,3 +190,10 @@ def test_hybrid_query_returns_lexical_match_and_respects_k(store):
     out = store.query("CERN electricity", k=3)
     assert len(out) <= 3
     assert store.query("self-attention", k=2, hybrid=False)
+
+
+def test_citation_formats_are_recognised():
+    from nlp_agent.nodes.helpers import cited_indices, normalize_citations
+    assert normalize_citations("vedi \u30101\u3011") == "vedi [1]"
+    assert cited_indices("a \u30101\u3011 b [2, 3] c [1][4]", 6) == [1, 2, 3, 4]
+    assert cited_indices("fuori range [9]", 6) == []

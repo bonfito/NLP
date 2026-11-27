@@ -8,7 +8,7 @@ from langgraph.graph import END, START, StateGraph
 from . import prompts
 from .config import Settings
 from .llm import LLM, extract_json
-from .nodes.helpers import cited_indices, format_passages, sources_block
+from .nodes.helpers import cited_indices, format_passages, normalize_citations, sources_block
 from .state import AgentState
 from .store import VectorStore
 
@@ -107,7 +107,7 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
         return {"passages": diversify(store.query(state["query"], k=k * CANDIDATES_FACTOR), k)}
 
     def _finish(state: AgentState, text: str) -> dict:
-        text = strip_model_sources(text)
+        text = normalize_citations(strip_model_sources(text))
         block, entries = sources_block(text, state["passages"])
         full = f"{text}\n\nFonti:\n{block}"
         full += opinion_note(text, state["passages"])

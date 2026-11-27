@@ -18,12 +18,19 @@ def format_passages(passages: list[dict], only: list[int] | None = None) -> str:
     return "\n\n".join(blocks)
 
 
+def normalize_citations(text: str) -> str:
+    """Alcuni modelli scrivono le citazioni come 【1】 o （1）: le riporto al formato [1] che il codice riconosce."""
+    return text.replace("\u3010", "[").replace("\u3011", "]")
+
+
 def cited_indices(text: str, n: int) -> list[int]:
+    """Numeri dei passaggi citati: riconosce [1], [1][2] e [1, 2]."""
     seen = []
-    for m in re.finditer(r"\[(\d{1,2})\]", text):
-        i = int(m.group(1))
-        if 1 <= i <= n and i not in seen:
-            seen.append(i)
+    for m in re.finditer(r"\[(\d{1,2}(?:\s*[,;]\s*\d{1,2})*)\]", normalize_citations(text)):
+        for num in re.findall(r"\d{1,2}", m.group(1)):
+            i = int(num)
+            if 1 <= i <= n and i not in seen:
+                seen.append(i)
     return seen
 
 
