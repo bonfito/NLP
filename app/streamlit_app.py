@@ -27,6 +27,28 @@ def load_agent():
 
 
 app, settings = load_agent()
+
+
+@st.cache_data
+def macro_topics(path: str) -> list[str]:
+    import yaml
+
+    files = (yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}).get("files", {})
+    return sorted({v["macro"] for v in files.values() if isinstance(v, dict) and v.get("macro")})
+
+
+def run_question(q: str) -> None:
+    st.session_state.chat.append(("user", q, []))
+    with st.spinner("Cerco nei materiali..."):
+        state = ask(app, q, st.session_state.history)
+    st.session_state.history = state["messages"]
+    if state.get("quiz_items"):
+        st.session_state.quiz = {"items": state["quiz_items"], "i": 0, "done": {}}
+        st.session_state.chat.append(("assistant", "Ecco il quiz: rispondi cliccando le opzioni qui sotto.", []))
+    else:
+        body = state["answer"].split("\n\nFonti:")[0]
+        st.session_state.chat.append(("assistant", body, state.get("sources", [])))
+
 tracker = ProgressStore(settings.progress_path)
 if app is None:
     st.error("Indice vuoto: esegui prima `python -m nlp_agent.cli index`.")
@@ -37,6 +59,16 @@ st.session_state.setdefault("chat", [])       # (ruolo, testo, fonti)
 st.session_state.setdefault("quiz", None)     # {"items": [...], "i": 0, "done": {i: scelta}}
 
 with st.sidebar:
+    st.header("Quiz")
+    topic = st.selectbox("Argomento", macro_topics(str(settings.course_map)), index=None,
+                         placeholder="Scegli un macroargomento")
+    custom = st.text_input("...oppure un argomento libero", placeholder="es. attention, BPE, WordNet")
+    weak = tracker.weakest()
+    if weak and st.button(f"Quiz sul tuo punto debole: {weak[0]}"):
+        st.session_state.pending = f"quiz su {weak[0]}"
+    if st.button("Avvia quiz", type="primary", disabled=not (custom.strip() or topic)):
+        st.session_state.pending = f"quiz su {custom.strip() or topic}"
+    st.divider()
     st.header("I tuoi progressi")
     stats = tracker.stats()
     if not stats:
@@ -46,9 +78,8 @@ with st.sidebar:
         st.metric("Risposte corrette", f"{ok}/{tot}", f"{round(100 * ok / tot)}%")
         for m, v in sorted(stats.items(), key=lambda x: x[1]["accuracy"]):
             st.progress(v["accuracy"], text=f"{m}: {v['correct']}/{v['attempts']}")
-        weak = tracker.weakest()
         if weak:
-            st.warning("Da ripassare: " + ", ".join(weak))
+            st.warning("Da ripassare: " + ", ".join(tracker.weakest()))
     if st.button("Azzera progressi"):
         tracker.reset()
         st.rerun()
@@ -98,15 +129,7 @@ if quiz:
             st.session_state.quiz = None
             st.rerun()
 
-if q := st.chat_input("Scrivi una domanda..."):
-    st.session_state.chat.append(("user", q, []))
-    with st.spinner("Cerco nei materiali..."):
-        state = ask(app, q, st.session_state.history)
-    st.session_state.history = state["messages"]
-    if state.get("quiz_items"):
-        st.session_state.quiz = {"items": state["quiz_items"], "i": 0, "done": {}}
-        st.session_state.chat.append(("assistant", "Ecco il quiz: rispondi cliccando le opzioni qui sotto.", []))
-    else:
-        body = state["answer"].split("\n\nFonti:")[0]
-        st.session_state.chat.append(("assistant", body, state.get("sources", [])))
+q = st.chat_input("Scrivi una domanda...") or st.session_state.pop("pending", None)
+if q:
+    run_question(q)
     st.rerun()

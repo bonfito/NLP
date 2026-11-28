@@ -26,3 +26,21 @@ def test_ui_chat_and_quiz_updates_progress(store, settings, monkeypatch):
     assert opts
     opts[0].click().run()
     assert ProgressStore(settings.progress_path).totals() == (1, 1)
+
+
+def test_ui_quiz_button_from_sidebar(store, settings, monkeypatch):
+    import nlp_agent.embeddings as emb
+    import nlp_agent.llm as llm_mod
+
+    monkeypatch.setenv("INDEX_DIR", str(settings.index_dir))
+    monkeypatch.setenv("PROGRESS_PATH", str(settings.progress_path))
+    monkeypatch.setattr(emb, "get_embedder", lambda name: emb.HashEmbedder())
+    monkeypatch.setattr(llm_mod, "get_llm", lambda s: FakeLLM(route="quiz", quiz=GOOD_QUIZ))
+    monkeypatch.setenv("COURSE_MAP", "../data/course_map.yaml")
+
+    at = AppTest.from_file("../app/streamlit_app.py", default_timeout=30).run()
+    assert not at.exception
+    at.text_input[0].set_value("self-attention").run()
+    [b for b in at.button if b.label == "Avvia quiz"][0].click().run()
+    assert not at.exception
+    assert any(b.label.startswith("A)") for b in at.button)
