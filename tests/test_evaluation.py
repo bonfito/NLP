@@ -62,3 +62,24 @@ def test_select_questions_is_balanced_and_includes_special_groups():
     assert select_questions(qs, None) == qs
     for q in qs:
         assert q.get("expected_answer") and (q.get("route") == "offtopic" or (q.get("expected_macro") and q.get("expected_files")))
+
+
+def test_run_eval_checkpoint_and_interrupt():
+    from nlp_agent.evaluation import run_eval
+
+    class App:
+        def __init__(self):
+            self.n = 0
+
+        def invoke(self, st):
+            self.n += 1
+            if self.n == 2:
+                raise RuntimeError("429 rate limit")
+            return {"route": "offtopic", "answer": "no", "sources": [], "corrections": 0, "messages": []}
+
+    qs = [{"id": f"q{i}", "question": "x", "route": "offtopic"} for i in range(3)]
+    saved = []
+    res = run_eval(App(), None, qs, on_row=lambda r: saved.append(len(r)))
+    assert [r["id"] for r in res["rows"]] == ["q0"] and "q1" in res["interrupted"] and saved == [1]
+    res2 = run_eval(App(), None, qs, done_rows=res["rows"])
+    assert len(res2["rows"]) == 3 or res2["interrupted"]

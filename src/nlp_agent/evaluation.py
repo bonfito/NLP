@@ -29,28 +29,46 @@ def grade(llm: LLM, question: str, expected: str, answer: str) -> bool:
     return bool(out.get("correct")) if isinstance(out, dict) else False
 
 
-def run_eval(app, llm: LLM, questions: list[dict], baseline: bool = True) -> dict:
-    rows = []
+def run_eval(app, llm: LLM, questions: list[dict], baseline: bool = True, done_rows: list[dict] | None = None,
+             on_row=None) -> dict:
+    """done_rows: righe già calcolate (si saltano); on_row(rows) è chiamata dopo ogni domanda per salvare un checkpoint.
+    Se una chiamata fallisce (es. limite giornaliero dell'API) si interrompe tenendo le righe fatte: result["interrupted"]."""
+    rows = list(done_rows or [])
+    finished = {r["id"] for r in rows}
+    interrupted = None
     for q in questions:
-        row = {"id": q["id"], "question": q["question"], "route_expected": q.get("route", "theory")}
-        state = ask(app, q["question"])
-        row.update(route=state["route"], answer=state["answer"], corrections=state.get("corrections", 0),
-                   sources=state.get("sources", []))
-        if row["route_expected"] == "offtopic":
-            row["route_ok"] = state["route"] == "offtopic"
-        else:
-            row["correct"] = grade(llm, q["question"], q["expected_answer"], state["answer"].split("\n\nFonti:")[0])
-            files = {s["file"] for s in row["sources"]}
-            row["source_file_ok"] = bool(files & set(q.get("expected_files", [])))
-            row["source_macro_ok"] = any(s["macro"] == q.get("expected_macro") for s in row["sources"])
-            if q.get("expect_opinion_flag"):
-                row["opinion_ok"] = "docente" in state["answer"].lower()
-            if baseline:
-                b = llm.complete(BASELINE_SYSTEM, q["question"])
-                row["baseline_answer"] = b
-                row["baseline_correct"] = grade(llm, q["question"], q["expected_answer"], b)
+        if q["id"] in finished:
+            continue
+        try:
+            row = _eval_one(app, llm, q, baseline)
+        except Exception as e:    # noqa: BLE001 - qualunque errore del provider: salvo ciò che c'è e mi fermo
+            interrupted = f"{q['id']}: {type(e).__name__}: {str(e)[:200]}"
+            break
         rows.append(row)
-    return {"rows": rows, "summary": summarize(rows)}
+        if on_row:
+            on_row(rows)
+    return {"rows": rows, "summary": summarize(rows), "interrupted": interrupted}
+
+
+def _eval_one(app, llm: LLM, q: dict, baseline: bool) -> dict:
+    row = {"id": q["id"], "question": q["question"], "route_expected": q.get("route", "theory")}
+    state = ask(app, q["question"])
+    row.update(route=state["route"], answer=state["answer"], corrections=state.get("corrections", 0),
+               sources=state.get("sources", []))
+    if row["route_expected"] == "offtopic":
+        row["route_ok"] = state["route"] == "offtopic"
+    else:
+        row["correct"] = grade(llm, q["question"], q["expected_answer"], state["answer"].split("\n\nFonti:")[0])
+        files = {s["file"] for s in row["sources"]}
+        row["source_file_ok"] = bool(files & set(q.get("expected_files", [])))
+        row["source_macro_ok"] = any(s["macro"] == q.get("expected_macro") for s in row["sources"])
+        if q.get("expect_opinion_flag"):
+            row["opinion_ok"] = "docente" in state["answer"].lower()
+        if baseline:
+            b = llm.complete(BASELINE_SYSTEM, q["question"])
+            row["baseline_answer"] = b
+            row["baseline_correct"] = grade(llm, q["question"], q["expected_answer"], b)
+    return row
 
 
 def _rate(rows, key):
