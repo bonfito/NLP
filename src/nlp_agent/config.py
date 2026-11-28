@@ -26,6 +26,7 @@ class Settings:
     raw_dir: Path = Path("data/raw")
     index_dir: Path = Path("data/index")
     course_map: Path = Path("data/course_map.yaml")
+    progress_path: Path = Path("data/progress.json")
     top_k: int = 6
     max_revisions: int = 2
 
@@ -40,6 +41,7 @@ class Settings:
             raw_dir=Path(g("RAW_DIR", "data/raw")),
             index_dir=Path(g("INDEX_DIR", "data/index")),
             course_map=Path(g("COURSE_MAP", "data/course_map.yaml")),
+            progress_path=Path(g("PROGRESS_PATH", "data/progress.json")),
             top_k=int(g("TOP_K", cls.top_k)),
             max_revisions=int(g("MAX_REVISIONS", cls.max_revisions)),
         )

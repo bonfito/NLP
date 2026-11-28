@@ -13,5 +13,7 @@ numpy
 langchain-ollama      # LLM locale via Ollama (come nell'esempio del prof)
 # langchain-anthropic # alternativa via API
 # langchain-openai    # alternativa via API compatibile OpenAI
+# interfaccia web
+streamlit>=1.40
 # dev
 pytest

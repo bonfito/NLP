@@ -56,3 +56,9 @@ Test automatici (`python -m pytest`) con LLM ed embedder finti: non servono mode
 
 ## docs/
 Documentazione di progetto (questo file).
+
+## Progressi e interfaccia web
+- `src/nlp_agent/progress.py`: `ProgressStore`, esiti dei quiz per macroargomento in `data/progress.json`.
+- `src/nlp_agent/quizrun.py`: quiz interattivo da terminale (comando `quiz`).
+- `app/streamlit_app.py`: interfaccia web (`streamlit run app/streamlit_app.py`).
+- `tests/test_progress.py`, `tests/test_ui.py`: test di progressi, nodo `progress` e UI.

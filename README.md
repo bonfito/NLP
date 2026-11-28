@@ -36,12 +36,22 @@ cp .env.example .env                  # scegliere LLM (Ollama locale o API) e mo
 python -m nlp_agent.cli index         # ingestion + embeddings (usa OCR dove serve)
 python -m nlp_agent.cli chat          # chat interattiva
 python -m nlp_agent.cli ask "Che cos'è la self-attention?"
+python -m nlp_agent.cli quiz "tokenization"   # quiz interattivo: corregge e salva l'esito
+python -m nlp_agent.cli progress              # risultati per macroargomento e cosa ripassare
+streamlit run app/streamlit_app.py            # interfaccia web (chat, quiz cliccabile, pannello progressi)
 python eval/run_eval.py               # valutazione agente vs. stesso LLM senza retrieval
 python -m pytest                      # test (senza modelli né rete: LLM ed embedder finti)
 python scripts/inspect_ingest.py      # chunk per file e avvisi, senza embeddings
 ```
 
 Per l'OCR serve `tesseract` installato nel sistema.
+
+### Progressi e interfaccia web
+
+Ogni risposta ai quiz viene registrata in `data/progress.json` (ignorato da git) con il macroargomento della fonte.
+Il nodo `progress` del grafo risponde a domande come «come sto andando?» o «cosa devo ripassare?» leggendo quel file,
+senza LLM: i numeri sono calcolati, non generati. Un macroargomento sotto il 70% è segnalato «da ripassare».
+L'interfaccia Streamlit usa lo stesso grafo, mantiene la cronologia della conversazione e mostra le fonti in un riquadro.
 
 ## Materiali e ingestion
 

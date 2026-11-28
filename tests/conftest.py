@@ -37,7 +37,7 @@ class FakeLLM:
 
 @pytest.fixture
 def settings(tmp_path):
-    return Settings(index_dir=tmp_path / "idx", top_k=3, max_revisions=2)
+    return Settings(index_dir=tmp_path / "idx", top_k=3, max_revisions=2, progress_path=tmp_path / "progress.json")
 
 
 @pytest.fixture

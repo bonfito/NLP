@@ -9,6 +9,7 @@ Classifica la richiesta dell'utente in UNA categoria:
 - theory: domanda su un concetto, metodo o argomento di NLP / linguistica computazionale / LLM / agenti
 - quiz: chiede un quiz o domande a risposta multipla
 - review: chiede un ripasso o un riassunto di un macroargomento
+- progress: chiede i propri risultati nei quiz, come sta andando, cosa deve ripassare o i suoi punti deboli
 - offtopic: non riguarda il corso
 Rispondi SOLO con JSON:
 {"route": "...", "topic": "<argomento in poche parole, in inglese>", "query_en": "<la richiesta riscritta come query di ricerca in inglese, max 12 parole, con i termini tecnici chiave>"}

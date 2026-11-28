@@ -10,12 +10,13 @@ from .config import Settings
 from .llm import LLM, extract_json
 from .nodes.helpers import cited_indices, format_passages, normalize_citations, sources_block
 from .state import AgentState
+from .progress import ProgressStore
 from .store import VectorStore
 
 OFFTOPIC_MSG = ("Posso aiutarti solo su argomenti del corso di NLP (embeddings, Transformer, prompting, "
                 "parsing, ecc.). Prova a riformulare la domanda in relazione al corso.")
 NO_PASSAGES_MSG = "Non ho trovato nei materiali del corso passaggi pertinenti a questa richiesta."
-VALID_ROUTES = {"theory", "quiz", "review", "offtopic"}
+VALID_ROUTES = {"theory", "quiz", "review", "progress", "offtopic"}
 MAX_SLIDES_PER_FILE = 4   # un deck di slide ha pochi chunk e spesso è LUI la risposta: più margine che per gli articoli
 MAX_PER_FILE = 2          # al massimo 2 chunk per file tra i passaggi: evita che un solo documento lungo affolli i risultati
 CANDIDATES_FACTOR = 4     # si recuperano k*4 candidati e poi si applica il limite per file
@@ -76,6 +77,8 @@ def diversify(passages: list[dict], k: int, per_file: int = MAX_PER_FILE, min_sl
 
 def _heuristic_route(q: str) -> str:
     ql = q.lower()
+    if any(w in ql for w in ("progress", "come sto andando", "punti deboli", "cosa devo ripassare", "miei risultati")):
+        return "progress"
     if "quiz" in ql or "scelta multipla" in ql or "risposta multipla" in ql:
         return "quiz"
     if any(w in ql for w in ("ripasso", "ripassa", "riassum", "review")):
@@ -83,7 +86,7 @@ def _heuristic_route(q: str) -> str:
     return "theory"
 
 
-def build_graph(llm: LLM, store: VectorStore, settings: Settings):
+def build_graph(llm: LLM, store: VectorStore, settings: Settings, progress: ProgressStore | None = None):
     """Costruisce e compila il grafo. llm e store sono iniettati, così si possono testare con dei finti."""
 
     def router(state: AgentState) -> dict:
@@ -98,6 +101,13 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
         query = topic if route in ("quiz", "review") else (query_en or q)
         return {"route": route, "topic": topic, "query": query,
                 "revisions": 0, "corrections": 0, "passages": [], "verdict": {}}
+
+    tracker = progress or ProgressStore(settings.progress_path)
+
+    def progress_node(state: AgentState) -> dict:
+        """Nessun retrieval né LLM: il riepilogo è calcolato dal file dei risultati, quindi non può inventare numeri."""
+        text = tracker.summary_text()
+        return {"answer": text, "sources": [], "messages": [{"role": "assistant", "content": text}]}
 
     def offtopic(state: AgentState) -> dict:
         return {"answer": OFFTOPIC_MSG, "messages": [{"role": "assistant", "content": OFFTOPIC_MSG}], "sources": []}
@@ -162,35 +172,40 @@ def build_graph(llm: LLM, store: VectorStore, settings: Settings):
         if not items:
             msg = "Non sono riuscito a generare un quiz valido. Riprova indicando meglio l'argomento."
             return {"answer": msg, "sources": [], "messages": [{"role": "assistant", "content": msg}]}
-        lines, entries = [], []
+        lines, entries, structured = [], [], []
         for n, it in enumerate(items, 1):
             src = state["passages"][min(max(int(it.get("source", 1)), 1), len(state["passages"])) - 1]
             from .nodes.helpers import source_entry
             e = source_entry(src)
             entries.append(e)
-            opts = "\n".join(f"   {'ABCD'[i]}) {_strip_label(o)}" for i, o in enumerate(it["options"]))
+            clean = [_strip_label(o) for o in it["options"]]
+            structured.append({"question": it["question"], "options": clean, "correct": it["correct"],
+                               "explanation": it["explanation"], "macro": e["macro"], "file": e["file"], "source": e})
+            opts = "\n".join(f"   {'ABCD'[i]}) {o}" for i, o in enumerate(clean))
             lines.append(f"{n}. {it['question']}\n{opts}\n   Risposta: {'ABCD'[it['correct']]} — {it['explanation']}\n"
                          f"   Fonte: {e['file']} — {e['macro']}, {e['kind']}, {e['locator']}")
         text = "\n\n".join(lines)
-        return {"answer": text, "sources": entries, "messages": [{"role": "assistant", "content": text}]}
+        return {"answer": text, "sources": entries, "quiz_items": structured,
+                "messages": [{"role": "assistant", "content": text}]}
 
     def route_after_router(state: AgentState) -> str:
-        return "offtopic" if state["route"] == "offtopic" else "retrieve"
+        return state["route"] if state["route"] in ("offtopic", "progress") else "retrieve"
 
     def route_after_retrieve(state: AgentState) -> str:
         return "quiz" if state["route"] == "quiz" else "answer"
 
     g = StateGraph(AgentState)
-    for name, fn in [("router", router), ("offtopic", offtopic), ("retrieve", retrieve), ("answer", answer),
+    for name, fn in [("router", router), ("offtopic", offtopic), ("progress", progress_node), ("retrieve", retrieve), ("answer", answer),
                      ("judge", judge), ("rewrite", rewrite), ("quiz", quiz)]:
         g.add_node(name, fn)
     g.add_edge(START, "router")
-    g.add_conditional_edges("router", route_after_router, {"offtopic": "offtopic", "retrieve": "retrieve"})
+    g.add_conditional_edges("router", route_after_router, {"offtopic": "offtopic", "progress": "progress", "retrieve": "retrieve"})
     g.add_conditional_edges("retrieve", route_after_retrieve, {"quiz": "quiz", "answer": "answer"})
     g.add_edge("answer", "judge")
     g.add_conditional_edges("judge", after_judge, {"rewrite": "rewrite", "end": END})
     g.add_edge("rewrite", "retrieve")
     g.add_edge("offtopic", END)
+    g.add_edge("progress", END)
     g.add_edge("quiz", END)
     return g.compile()
 

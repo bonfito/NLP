@@ -10,3 +10,4 @@ data/raw/*
 data/index/
 data/ocr_cache/
 eval/results/
+data/progress.json

@@ -29,6 +29,9 @@ def main(argv=None) -> int:
     p_idx.add_argument("--no-ocr", action="store_true")
     p_idx.add_argument("--only", nargs="*")
     sub.add_parser("chat", help="chat interattiva")
+    p_quiz = sub.add_parser("quiz", help="quiz interattivo con correzione e tracciamento dei progressi")
+    p_quiz.add_argument("topic")
+    sub.add_parser("progress", help="mostra i risultati dei quiz e cosa ripassare")
     p_ask = sub.add_parser("ask", help="una domanda singola")
     p_ask.add_argument("question")
     args = ap.parse_args(argv)
@@ -39,6 +42,12 @@ def main(argv=None) -> int:
 
         rep = build_index(s, ocr=not args.no_ocr, only=args.only, reset=not args.only)
         print(json.dumps(rep, ensure_ascii=False, indent=2))
+        return 0
+
+    if args.cmd == "progress":
+        from .progress import ProgressStore
+
+        print(_console_safe(ProgressStore(s.progress_path).summary_text()))
         return 0
 
     from .embeddings import get_embedder
@@ -52,6 +61,17 @@ def main(argv=None) -> int:
         return 1
     app = build_graph(get_llm(s), store, s)
 
+    if args.cmd == "quiz":
+        from .progress import ProgressStore
+        from .quizrun import run_quiz
+
+        state = ask(app, f"quiz su {args.topic}")
+        items = state.get("quiz_items") or []
+        if not items:
+            print(_console_safe(state["answer"]))
+            return 1
+        run_quiz(items, ProgressStore(s.progress_path), show=lambda t: print(_console_safe(t)))
+        return 0
     if args.cmd == "ask":
         print(_console_safe(ask(app, args.question)["answer"]))
         return 0
